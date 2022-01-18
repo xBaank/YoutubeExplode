@@ -46,7 +46,7 @@ public class YoutubeClient
     /// <summary>
     /// Initializes an instance of <see cref="YoutubeClient"/>.
     /// </summary>
-    public YoutubeClient() : this(Http.Client)
+    public YoutubeClient() : this(new HttpClient())
     {
     }
 }
