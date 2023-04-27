@@ -35,9 +35,9 @@ public class YoutubeClient
     /// <summary>
     /// Initializes an instance of <see cref="YoutubeClient" />.
     /// </summary>
-    public YoutubeClient(HttpClient http)
+    public YoutubeClient(HttpClient http, CookiesSettings? cookies = null)
     {
-        var youtubeHttp = new HttpClient(new YoutubeHttpMessageHandler(http), true);
+        var youtubeHttp = new HttpClient(new YoutubeHttpMessageHandler(http, cookies), true);
 
         Videos = new VideoClient(youtubeHttp);
         Playlists = new PlaylistClient(youtubeHttp);
@@ -48,7 +48,7 @@ public class YoutubeClient
     /// <summary>
     /// Initializes an instance of <see cref="YoutubeClient" />.
     /// </summary>
-    public YoutubeClient() : this(Http.Client)
+    public YoutubeClient(CookiesSettings? cookies = null ) : this(Http.Client, cookies)
     {
     }
 }

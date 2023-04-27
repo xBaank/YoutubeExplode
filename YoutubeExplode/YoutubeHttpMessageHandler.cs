@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using YoutubeExplode.Exceptions;
@@ -11,8 +14,13 @@ namespace YoutubeExplode;
 internal class YoutubeHttpMessageHandler : HttpMessageHandler
 {
     private readonly HttpClient _http;
+    private readonly CookiesSettings? _cookies;
 
-    public YoutubeHttpMessageHandler(HttpClient http) => _http = http;
+    public YoutubeHttpMessageHandler(HttpClient http, CookiesSettings? cookiesSettings)
+    {
+        _cookies = cookiesSettings;
+        _http = http;
+    }
 
     private async ValueTask<HttpResponseMessage> SendOnceAsync(
         HttpRequestMessage request,
@@ -55,7 +63,20 @@ internal class YoutubeHttpMessageHandler : HttpMessageHandler
         }
 
         // Set required cookies
-        request.Headers.Add("Cookie", "CONSENT=YES+cb; YSC=DwKYllHNwuw");
+        if (_cookies is not null)
+        {
+            const string origin = "https://www.youtube.com";
+            request.Headers.Add("Cookie", $"CONSENT=YES+cb; YSC=DwKYllHNwuw; SAPISID={_cookies.Sapisid}; __Secure-3PAPISID={_cookies.Sapisid}; __Secure-3PSID={_cookies.Psid};");
+            request.Headers.Add("Authorization", $"SAPISIDHASH {GenerateSidBasedAuth(_cookies.Sapisid, origin)}");
+            request.Headers.Add("Origin", origin);
+            request.Headers.Add("X-Origin", origin);
+            //We can use origin as the referer
+            request.Headers.Add("Referer", origin);
+        }
+        else
+        {
+            request.Headers.Add("Cookie", "CONSENT=YES+cb; YSC=DwKYllHNwuw");
+        }
 
         var response = await _http.SendAsync(
             request,
@@ -101,5 +122,20 @@ internal class YoutubeHttpMessageHandler : HttpMessageHandler
             {
             }
         }
+    }
+    
+    private static string GenerateSidBasedAuth(string sid, string origin)
+    {
+        var date = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        var timestamp = date / 1000;
+        var sidHash = Hash($"{timestamp} {sid} {origin}");
+        return $"{timestamp}_{sidHash}";
+    }
+    
+    static string Hash(string input)
+    {
+        var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
+        return string.Concat(hash.Select(b => b.ToString("x2")));
     }
 }
