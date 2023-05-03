@@ -1,17 +1,23 @@
-﻿namespace YoutubeExplode.Tests;
-
+﻿using System;
 using System.Threading.Tasks;
 using Xunit;
+using YoutubeExplode.Tests.TestData;
+
+namespace YoutubeExplode.Tests;
 
 public class AuthenticateTest
 {
-
-    [Theory(Skip = "This test requires manual setup")]
-    [InlineData(TestData.VideoIds.AgeRestrictedSexual)]
-    [InlineData(TestData.VideoIds.AgeRestrictedEmbedRestricted)]
-    [InlineData(TestData.VideoIds.AgeRestrictedViolent)]
+    [Theory]
+    [InlineData(VideoIds.AgeRestrictedSexual)]
+    [InlineData(VideoIds.AgeRestrictedEmbedRestricted)]
+    [InlineData(VideoIds.AgeRestrictedViolent)]
     public async Task Authenticate(string videoId)
     {
+        var sapisid = Environment.GetEnvironmentVariable("SAPISID");
+        var psid = Environment.GetEnvironmentVariable("PSID");
+
+        if (psid is null || sapisid is null) return;
+
         var cookies = new CookiesSettings("", "");
         var client = new YoutubeClient(cookies);
         var video = await client.Videos.Streams.GetManifestAsync(videoId);
