@@ -6,8 +6,8 @@ on:
   schedule:
     - cron: "0 0 * * *"
 env:
-  PSID: ${{secrets.PSID}}
-  SAPISID: ${{secrets.SAPISID}}
+  PSID: ${{ secrets.PSID }}
+  SAPISID: ${{ secrets.SAPISID }}
 
 jobs:
   main:
