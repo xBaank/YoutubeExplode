@@ -16,7 +16,7 @@ public class AuthenticateTest
         var sapisid = Environment.GetEnvironmentVariable("SAPISID");
         var psid = Environment.GetEnvironmentVariable("PSID");
 
-        if (psid is null || sapisid is null) return;
+        if (psid is null || sapisid is null) throw new Exception("SAPISID and PSID must be set as environment variables");
 
         var cookies = new CookiesSettings("", "");
         var client = new YoutubeClient(cookies);
