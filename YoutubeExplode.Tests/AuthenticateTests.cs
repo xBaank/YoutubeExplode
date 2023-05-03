@@ -18,7 +18,7 @@ public class AuthenticateTest
 
         if (psid is null || sapisid is null) throw new Exception("SAPISID and PSID must be set as environment variables");
 
-        var cookies = new CookiesSettings("", "");
+        var cookies = new CookiesSettings(sapisid, psid);
         var client = new YoutubeClient(cookies);
         var video = await client.Videos.Streams.GetManifestAsync(videoId);
         Assert.NotNull(video);
