@@ -5,9 +5,10 @@ on:
   pull_request:
   schedule:
     - cron: "0 0 * * *"
+
 env:
-  PSID: ${{ secrets.PSID }}
   SAPISID: ${{ secrets.SAPISID }}
+  PSID: ${{ secrets.PSID }}
 
 jobs:
   main:
