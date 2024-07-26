@@ -100,6 +100,7 @@ public class SearchSpecs
 
         // Assert
         playlists.Should().NotBeEmpty();
+        playlists.Should().Contain(i => i.Count > 0);
     }
 
     [Fact]

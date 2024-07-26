@@ -164,11 +164,14 @@ public class SearchClient(HttpClient http)
                     })
                     .ToArray();
 
+                var playlistCount = playlistData.Count;
+
                 var playlist = new PlaylistSearchResult(
                     playlistId,
                     playlistTitle,
                     playlistAuthor,
-                    playlistThumbnails
+                    playlistThumbnails,
+                    playlistCount
                 );
 
                 results.Add(playlist);

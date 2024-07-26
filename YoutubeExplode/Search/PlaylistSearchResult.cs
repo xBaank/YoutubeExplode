@@ -12,7 +12,8 @@ public class PlaylistSearchResult(
     PlaylistId id,
     string title,
     Author? author,
-    IReadOnlyList<Thumbnail> thumbnails
+    IReadOnlyList<Thumbnail> thumbnails,
+    int? count
 ) : ISearchResult, IPlaylist
 {
     /// <inheritdoc />
@@ -29,6 +30,9 @@ public class PlaylistSearchResult(
 
     /// <inheritdoc />
     public IReadOnlyList<Thumbnail> Thumbnails { get; } = thumbnails;
+
+    /// <inheritdoc />
+    public int? Count { get; } = count;
 
     /// <inheritdoc />
     [ExcludeFromCodeCoverage]

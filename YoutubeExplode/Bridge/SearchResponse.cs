@@ -169,6 +169,10 @@ internal partial class SearchResponse
                 .SelectMany(j => j.EnumerateArrayOrEmpty())
                 .Select(j => new ThumbnailData(j))
                 .ToArray() ?? [];
+
+        [Lazy]
+        public int? Count =>
+            content.GetPropertyOrNull("videoCount")?.GetStringOrNull()?.ParseIntOrNull();
     }
 }
 
