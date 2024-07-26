@@ -33,12 +33,7 @@ public class Playlist(
     /// </summary>
     public string Description { get; } = description;
 
-    /// <summary>
-    /// Total count of videos included in the playlist.
-    /// </summary>
-    /// <remarks>
-    /// May be null in case of infinite playlists (e.g. auto-generated mixes).
-    /// </remarks>
+    /// <inheritdoc />
     public int? Count { get; } = count;
 
     /// <inheritdoc />

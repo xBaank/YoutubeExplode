@@ -35,4 +35,12 @@ public interface IPlaylist
     /// Playlist thumbnails.
     /// </summary>
     IReadOnlyList<Thumbnail> Thumbnails { get; }
+
+    /// <summary>
+    /// Total count of videos included in the playlist.
+    /// </summary>
+    /// <remarks>
+    /// May be null in case of infinite playlists (e.g. auto-generated mixes).
+    /// </remarks>
+    int? Count { get; }
 }
