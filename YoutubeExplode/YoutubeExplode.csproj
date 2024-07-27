@@ -10,6 +10,8 @@
   <PropertyGroup>
     <PackageIcon>favicon.png</PackageIcon>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>0.0.1-dev</Version>
   </PropertyGroup>
 
   <ItemGroup>

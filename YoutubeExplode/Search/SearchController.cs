@@ -1,6 +1,8 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using YoutubeExplode.Bridge;
 using YoutubeExplode.Utils;
 
@@ -54,6 +56,7 @@ internal class SearchController(HttpClient http)
 
     public async ValueTask<RecommendationsResponse> GetRecommendationsResponseAsync(
         string? continuationToken,
+        string? visitorData,
         CancellationToken cancellationToken = default
     )
     {
@@ -73,7 +76,8 @@ internal class SearchController(HttpClient http)
                     "clientVersion": "1.20240717.01.00",
                     "hl": "en",
                     "gl": "US",
-                    "utcOffsetMinutes": 0
+                    "utcOffsetMinutes": 0,
+                    "visitorData": {{Json.Serialize(visitorData)}}
                 }
               }
             }
@@ -83,8 +87,8 @@ internal class SearchController(HttpClient http)
         using var response = await http.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        return RecommendationsResponse.Parse(
-            await response.Content.ReadAsStringAsync(cancellationToken)
-        );
+        var debug = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        return RecommendationsResponse.Parse(debug);
     }
 }

@@ -33,20 +33,36 @@ internal partial class RecommendationsResponse(JsonElement content)
             .SelectMany(i =>
                 i.GetPropertyOrNull("contents")
                     ?.EnumerateArrayOrEmpty()
-                    .Select(i => i.GetPropertyOrNull("musicResponsiveListItemRenderer")) ?? []
+                    .Select(i =>
+                        i.GetPropertyOrNull("musicResponsiveListItemRenderer")
+                        ?? i.GetPropertyOrNull("musicTwoRowItemRenderer")
+                    ) ?? []
             )
             .WhereNotNull()
             .Select(i => new RecommendationsData(i))
             .ToArray() ?? [];
 
     [Lazy]
+    private JsonElement? ContinuationRoot =>
+        content
+            .GetPropertyOrNull("continuationContents")
+            ?.GetPropertyOrNull("sectionListContinuation") ?? ContentRoot;
+
+    [Lazy]
     public string? ContinuationToken =>
-        ContentRoot
+        ContinuationRoot
             ?.GetPropertyOrNull("continuations")
             ?.EnumerateArrayOrEmpty()
             .FirstOrNull()
             ?.GetPropertyOrNull("nextContinuationData")
             ?.GetPropertyOrNull("continuation")
+            ?.GetStringOrNull();
+
+    [Lazy]
+    public string? VisitorData =>
+        content
+            .GetPropertyOrNull("responseContext")
+            ?.GetPropertyOrNull("visitorData")
             ?.GetStringOrNull();
 }
 
@@ -60,12 +76,24 @@ internal partial class RecommendationsData(JsonElement content)
             ?.GetPropertyOrNull("content")
             ?.GetPropertyOrNull("musicPlayButtonRenderer")
             ?.GetPropertyOrNull("playNavigationEndpoint")
-            ?.GetPropertyOrNull("watchEndpoint");
+            ?.GetPropertyOrNull("watchEndpoint")
+        ?? content
+            .GetPropertyOrNull("menu")
+            ?.GetPropertyOrNull("menuRenderer")
+            ?.GetPropertyOrNull("items")
+            ?.EnumerateArrayOrEmpty()
+            .FirstOrNull()
+            ?.GetPropertyOrNull("menuNavigationItemRenderer")
+            ?.GetPropertyOrNull("navigationEndpoint")
+            ?.GetPropertyOrNull("watchPlaylistEndpoint");
+
+    [Lazy]
+    private JsonElement? ThumbnailsRoot =>
+        content.GetPropertyOrNull("thumbnail") ?? content.GetPropertyOrNull("thumbnailRenderer");
 
     [Lazy]
     public IReadOnlyList<ThumbnailData> Thumbnails =>
-        content
-            .GetPropertyOrNull("thumbnail")
+        ThumbnailsRoot
             ?.GetPropertyOrNull("musicThumbnailRenderer")
             ?.GetPropertyOrNull("thumbnail")
             ?.GetPropertyOrNull("thumbnails")
@@ -80,6 +108,27 @@ internal partial class RecommendationsData(JsonElement content)
     public string? VideoId => WatchEndpoint?.GetPropertyOrNull("videoId")?.GetStringOrNull();
 
     [Lazy]
+    public string? Subtitle =>
+        content
+            .GetPropertyOrNull("flexColumns")
+            ?.EnumerateArrayOrEmpty()
+            .ElementAtOrNull(1)
+            ?.GetPropertyOrNull("musicResponsiveListItemFlexColumnRenderer")
+            ?.GetPropertyOrNull("text")
+            ?.GetPropertyOrNull("runs")
+            ?.EnumerateArrayOrEmpty()
+            .FirstOrNull()
+            ?.GetPropertyOrNull("text")
+            ?.GetStringOrNull()
+        ?? content
+            .GetPropertyOrNull("subtitle")
+            ?.GetPropertyOrNull("runs")
+            ?.EnumerateArrayOrEmpty()
+            .FirstOrNull()
+            ?.GetPropertyOrNull("text")
+            ?.GetStringOrNull();
+
+    [Lazy]
     public string? Title =>
         content
             .GetPropertyOrNull("flexColumns")
@@ -90,6 +139,13 @@ internal partial class RecommendationsData(JsonElement content)
             ?.GetPropertyOrNull("runs")
             ?.EnumerateArrayOrEmpty()
             .FirstOrNull()
+            ?.GetPropertyOrNull("text")
+            ?.GetStringOrNull()
+        ?? content
+            .GetPropertyOrNull("title")
+            ?.GetPropertyOrNull("runs")
+            ?.EnumerateArrayOrNull()
+            ?.FirstOrNull()
             ?.GetPropertyOrNull("text")
             ?.GetStringOrNull();
 }

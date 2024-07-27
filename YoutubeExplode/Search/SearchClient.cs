@@ -28,11 +28,13 @@ public class SearchClient(HttpClient http)
     )
     {
         var continuationToken = default(string?);
+        var visitorData = default(string?);
 
         do
         {
             var recommendationsResponse = await _controller.GetRecommendationsResponseAsync(
                 continuationToken,
+                visitorData,
                 cancellationToken
             );
 
@@ -44,23 +46,25 @@ public class SearchClient(HttpClient http)
                     item.Title
                     ?? throw new YoutubeExplodeException("Couldn't extract recommendation title");
 
-                var videoId =
-                    item.VideoId?.Pipe(VideoId.Parse)
-                    ?? throw new YoutubeExplodeException(
-                        "Couldn't extract recommendation video id"
-                    );
+                var author =
+                    item.Subtitle
+                    ?? throw new YoutubeExplodeException("Couldn't extract recommendation author");
+
+                var videoId = item.VideoId?.Pipe(VideoId.Parse);
+
                 var playlistId =
                     item.PlaylistId?.Pipe(PlaylistId.Parse)
                     ?? throw new YoutubeExplodeException(
                         "Couldn't extract recommendation playlist id"
                     );
 
-                results.Add(new Recommendation(title, videoId, playlistId));
+                results.Add(new Recommendation(title, author, videoId, playlistId));
             }
 
             yield return Batch.Create(results);
 
             continuationToken = recommendationsResponse.ContinuationToken;
+            visitorData = recommendationsResponse.VisitorData ?? visitorData;
         } while (!string.IsNullOrWhiteSpace(continuationToken));
     }
 

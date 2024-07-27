@@ -10,7 +10,9 @@ namespace YoutubeExplode.Search;
 /// <param name="title"></param>
 /// <param name="playlistId"></param>
 /// <param name="videoId"></param>
-public class Recommendation(string title, VideoId videoId, PlaylistId playlistId) : IBatchItem
+/// <param name="authors"></param>
+public class Recommendation(string title, string authors, VideoId? videoId, PlaylistId playlistId)
+    : IBatchItem
 {
     /// <summary>
     /// Recommendation title
@@ -18,9 +20,14 @@ public class Recommendation(string title, VideoId videoId, PlaylistId playlistId
     public string Title { get; } = title;
 
     /// <summary>
+    /// Contains playlist authors metadata
+    /// </summary>
+    public string Authors { get; } = authors;
+
+    /// <summary>
     /// First video ID
     /// </summary>
-    public VideoId VideoId { get; } = videoId;
+    public VideoId? VideoId { get; } = videoId;
 
     /// <summary>
     /// Playlist ID
