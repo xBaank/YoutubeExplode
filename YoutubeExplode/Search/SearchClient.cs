@@ -7,7 +7,9 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using YoutubeExplode.Common;
 using YoutubeExplode.Exceptions;
+using YoutubeExplode.Playlists;
 using YoutubeExplode.Utils.Extensions;
+using YoutubeExplode.Videos;
 
 namespace YoutubeExplode.Search;
 
@@ -17,6 +19,57 @@ namespace YoutubeExplode.Search;
 public class SearchClient(HttpClient http)
 {
     private readonly SearchController _controller = new(http);
+
+    /// <summary>
+    /// Get youtube music recommendations
+    /// </summary>
+    public async IAsyncEnumerable<Batch<Recommendation>> GetRecommendationsBatchesAsync(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default
+    )
+    {
+        var continuationToken = default(string?);
+
+        do
+        {
+            var recommendationsResponse = await _controller.GetRecommendationsResponseAsync(
+                continuationToken,
+                cancellationToken
+            );
+
+            var results = new List<Recommendation>();
+
+            foreach (var item in recommendationsResponse.Recommendations)
+            {
+                var title =
+                    item.Title
+                    ?? throw new YoutubeExplodeException("Couldn't extract recommendation title");
+
+                var videoId =
+                    item.VideoId?.Pipe(VideoId.Parse)
+                    ?? throw new YoutubeExplodeException(
+                        "Couldn't extract recommendation video id"
+                    );
+                var playlistId =
+                    item.PlaylistId?.Pipe(PlaylistId.Parse)
+                    ?? throw new YoutubeExplodeException(
+                        "Couldn't extract recommendation playlist id"
+                    );
+
+                results.Add(new Recommendation(title, videoId, playlistId));
+            }
+
+            yield return Batch.Create(results);
+
+            continuationToken = recommendationsResponse.ContinuationToken;
+        } while (!string.IsNullOrWhiteSpace(continuationToken));
+    }
+
+    /// <summary>
+    /// Get youtube music recommendations
+    /// </summary>
+    public IAsyncEnumerable<Recommendation> GetRecommendationsAsync(
+        CancellationToken cancellationToken = default
+    ) => GetRecommendationsBatchesAsync(cancellationToken).FlattenAsync();
 
     /// <summary>
     /// Enumerates batches of search results returned by the specified query.

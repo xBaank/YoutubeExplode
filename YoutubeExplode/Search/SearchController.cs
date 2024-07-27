@@ -51,4 +51,40 @@ internal class SearchController(HttpClient http)
 
         return SearchResponse.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
     }
+
+    public async ValueTask<RecommendationsResponse> GetRecommendationsResponseAsync(
+        string? continuationToken,
+        CancellationToken cancellationToken = default
+    )
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "https://www.youtube.com/youtubei/v1/browse"
+        );
+
+        request.Content = new StringContent(
+            // lang=json
+            $$"""
+            {
+              "continuation": {{Json.Serialize(continuationToken)}},
+              "context": {
+                "client": {
+                    "clientName": "WEB_REMIX",
+                    "clientVersion": "1.20240717.01.00",
+                    "hl": "en",
+                    "gl": "US",
+                    "utcOffsetMinutes": 0
+                }
+              }
+            }
+            """
+        );
+
+        using var response = await http.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return RecommendationsResponse.Parse(
+            await response.Content.ReadAsStringAsync(cancellationToken)
+        );
+    }
 }

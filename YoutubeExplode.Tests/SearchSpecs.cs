@@ -115,4 +115,17 @@ public class SearchSpecs
         // Assert
         channels.Should().NotBeEmpty();
     }
+
+    [Fact]
+    public async Task I_can_get_a_set_of_music_recommendations()
+    {
+        // Arrange
+        var youtube = new YoutubeClient();
+
+        // Act
+        var recommendations = await youtube.Search.GetRecommendationsAsync();
+
+        // Assert
+        recommendations.Should().NotBeEmpty();
+    }
 }
