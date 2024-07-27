@@ -16,12 +16,12 @@ on:
     - cron: "0 0 * * *"
   push:
     branches:
-      - master
+      - music
     tags:
       - "*"
   pull_request:
     branches:
-      - master
+      - music
 
 jobs:
   main:
