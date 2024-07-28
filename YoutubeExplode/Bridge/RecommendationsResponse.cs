@@ -21,7 +21,10 @@ internal partial class RecommendationsResponse(JsonElement content)
             .FirstOrNull()
             ?.GetPropertyOrNull("tabRenderer")
             ?.GetPropertyOrNull("content")
-            ?.GetPropertyOrNull("sectionListRenderer");
+            ?.GetPropertyOrNull("sectionListRenderer")
+        ?? content
+            .GetPropertyOrNull("continuationContents")
+            ?.GetPropertyOrNull("sectionListContinuation");
 
     [Lazy]
     public RecommendationsData[] Recommendations =>
@@ -43,14 +46,8 @@ internal partial class RecommendationsResponse(JsonElement content)
             .ToArray() ?? [];
 
     [Lazy]
-    private JsonElement? ContinuationRoot =>
-        content
-            .GetPropertyOrNull("continuationContents")
-            ?.GetPropertyOrNull("sectionListContinuation") ?? ContentRoot;
-
-    [Lazy]
     public string? ContinuationToken =>
-        ContinuationRoot
+        ContentRoot
             ?.GetPropertyOrNull("continuations")
             ?.EnumerateArrayOrEmpty()
             .FirstOrNull()
@@ -69,14 +66,13 @@ internal partial class RecommendationsResponse(JsonElement content)
 internal partial class RecommendationsData(JsonElement content)
 {
     [Lazy]
-    private JsonElement? WatchEndpoint =>
+    private JsonElement? NavigationEndpoint =>
         content
             .GetPropertyOrNull("overlay")
             ?.GetPropertyOrNull("musicItemThumbnailOverlayRenderer")
             ?.GetPropertyOrNull("content")
             ?.GetPropertyOrNull("musicPlayButtonRenderer")
             ?.GetPropertyOrNull("playNavigationEndpoint")
-            ?.GetPropertyOrNull("watchEndpoint")
         ?? content
             .GetPropertyOrNull("menu")
             ?.GetPropertyOrNull("menuRenderer")
@@ -84,8 +80,12 @@ internal partial class RecommendationsData(JsonElement content)
             ?.EnumerateArrayOrEmpty()
             .FirstOrNull()
             ?.GetPropertyOrNull("menuNavigationItemRenderer")
-            ?.GetPropertyOrNull("navigationEndpoint")
-            ?.GetPropertyOrNull("watchPlaylistEndpoint");
+            ?.GetPropertyOrNull("navigationEndpoint");
+
+    [Lazy]
+    private JsonElement? WatchEndpoint =>
+        NavigationEndpoint?.GetPropertyOrNull("watchPlaylistEndpoint")
+        ?? NavigationEndpoint?.GetPropertyOrNull("watchEndpoint");
 
     [Lazy]
     private JsonElement? ThumbnailsRoot =>

@@ -52,13 +52,12 @@ public class SearchClient(HttpClient http)
 
                 var videoId = item.VideoId?.Pipe(VideoId.Parse);
 
-                var playlistId =
-                    item.PlaylistId?.Pipe(PlaylistId.Parse)
-                    ?? throw new YoutubeExplodeException(
-                        "Couldn't extract recommendation playlist id"
-                    );
+                var playlistId = item.PlaylistId?.Pipe(PlaylistId.Parse);
 
-                results.Add(new Recommendation(title, author, videoId, playlistId));
+                if (playlistId is null)
+                    continue;
+
+                results.Add(new Recommendation(title, author, videoId, playlistId.Value));
             }
 
             yield return Batch.Create(results);

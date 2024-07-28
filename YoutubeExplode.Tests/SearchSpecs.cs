@@ -126,6 +126,6 @@ public class SearchSpecs
         var recommendations = await youtube.Search.GetRecommendationsAsync();
 
         // Assert
-        recommendations.Should().NotBeEmpty();
+        recommendations.Should().HaveCountGreaterThan(60);
     }
 }
