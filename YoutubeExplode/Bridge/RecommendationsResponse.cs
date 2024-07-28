@@ -112,21 +112,25 @@ internal partial class RecommendationsData(JsonElement content)
         content
             .GetPropertyOrNull("flexColumns")
             ?.EnumerateArrayOrEmpty()
-            .ElementAtOrNull(1)
-            ?.GetPropertyOrNull("musicResponsiveListItemFlexColumnRenderer")
-            ?.GetPropertyOrNull("text")
-            ?.GetPropertyOrNull("runs")
-            ?.EnumerateArrayOrEmpty()
-            .FirstOrNull()
-            ?.GetPropertyOrNull("text")
-            ?.GetStringOrNull()
+            .Skip(1)
+            .Select(i =>
+                i.GetPropertyOrNull("musicResponsiveListItemFlexColumnRenderer")
+                    ?.GetPropertyOrNull("text")
+                    ?.GetPropertyOrNull("runs")
+                    ?.EnumerateArrayOrEmpty()
+                    .FirstOrNull()
+                    ?.GetPropertyOrNull("text")
+                    ?.GetStringOrNull()
+            )
+            .WhereNotNull()
+            .Pipe(i => string.Join(" - ", i))
         ?? content
             .GetPropertyOrNull("subtitle")
             ?.GetPropertyOrNull("runs")
             ?.EnumerateArrayOrEmpty()
-            .FirstOrNull()
-            ?.GetPropertyOrNull("text")
-            ?.GetStringOrNull();
+            .Select(i => i.GetPropertyOrNull("text")?.GetStringOrNull())
+            .WhereNotNull()
+            .Pipe(i => string.Join("", i));
 
     [Lazy]
     public string? Title =>
