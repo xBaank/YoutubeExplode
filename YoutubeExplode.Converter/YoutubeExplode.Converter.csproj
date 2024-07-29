@@ -12,6 +12,7 @@
     <PackageProjectUrl>https://github.com/Tyrrrz/YoutubeExplode/tree/master/YoutubeExplode.Converter</PackageProjectUrl>
     <PackageIcon>favicon.png</PackageIcon>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>YoutubeExplodeMusic.Converter</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
