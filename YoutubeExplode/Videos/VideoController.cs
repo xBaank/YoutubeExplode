@@ -73,7 +73,8 @@ internal class VideoController(HttpClient http)
                   "gl": "US",
                   "utcOffsetMinutes": 0
                 }
-              }
+              },
+              "contentCheckOk": true
             }
             """
         );

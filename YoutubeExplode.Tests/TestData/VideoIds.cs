@@ -6,6 +6,7 @@ internal static class VideoIds
     public const string Unlisted = "UGh4_HsibAE";
     public const string Private = "pb_hHv3fByo";
     public const string Deleted = "qld9w0b-1ao";
+    public const string Suicidal = "vcw5THyM7Jo";
     public const string EmbedRestrictedByYouTube = "_kmeFXjjGfk";
     public const string EmbedRestrictedByAuthor = "MeJVWBSsPAY";
     public const string AgeRestrictedViolent = "rXMX4YJ7Lks";

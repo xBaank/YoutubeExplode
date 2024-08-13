@@ -59,6 +59,7 @@ public class StreamSpecs(ITestOutputHelper testOutput)
 
     [Theory]
     [InlineData(VideoIds.Normal)]
+    [InlineData(VideoIds.Suicidal)]
     [InlineData(VideoIds.Unlisted)]
     [InlineData(VideoIds.EmbedRestrictedByYouTube)]
     [InlineData(VideoIds.EmbedRestrictedByAuthor)]
@@ -126,6 +127,7 @@ public class StreamSpecs(ITestOutputHelper testOutput)
 
     [Theory]
     [InlineData(VideoIds.Normal)]
+    [InlineData(VideoIds.Suicidal)]
     [InlineData(VideoIds.AgeRestrictedViolent, Skip = "Age-restricted videos are broken again")]
     [InlineData(VideoIds.AgeRestrictedSexual, Skip = "Age-restricted videos are broken again")]
     [InlineData(VideoIds.LiveStreamRecording)]
@@ -152,6 +154,7 @@ public class StreamSpecs(ITestOutputHelper testOutput)
     [Theory]
     [InlineData(VideoIds.Normal)]
     [InlineData(VideoIds.Unlisted)]
+    [InlineData(VideoIds.Suicidal)]
     [InlineData(VideoIds.EmbedRestrictedByYouTube)]
     [InlineData(VideoIds.EmbedRestrictedByAuthor)]
     [InlineData(VideoIds.AgeRestrictedViolent, Skip = "Age-restricted videos are broken again")]
