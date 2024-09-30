@@ -46,6 +46,9 @@ internal partial class DashManifest
         public string? Signature => null;
 
         // DASH streams don't have signatures
+        public string? NSignature => null;
+
+        // DASH streams don't have signatures
         public string? SignatureParameter => null;
 
         [Lazy]

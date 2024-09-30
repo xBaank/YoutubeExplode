@@ -154,7 +154,7 @@ public class StreamSpecs(ITestOutputHelper testOutput)
     [InlineData(VideoIds.Unlisted)]
     [InlineData(VideoIds.EmbedRestrictedByYouTube)]
     [InlineData(VideoIds.EmbedRestrictedByAuthor)]
-    [InlineData(VideoIds.ContentCheckViolent, Skip = "Needs n-signature deciphering to support")]
+    [InlineData(VideoIds.ContentCheckViolent)]
     [InlineData(VideoIds.ContentCheckSexual, Skip = "Needs n-signature deciphering to support")]
     [InlineData(VideoIds.ContentCheckSuicide)]
     [InlineData(VideoIds.LiveStreamRecording)]

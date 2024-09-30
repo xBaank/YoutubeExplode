@@ -26,6 +26,7 @@ public class StreamClient(HttpClient http)
     // Because we determine the player version ourselves, it's safe to cache the cipher manifest
     // for the entire lifetime of the client.
     private CipherManifest? _cipherManifest;
+    private Func<string, string>? _decryptN;
 
     private async ValueTask<CipherManifest> ResolveCipherManifestAsync(
         CancellationToken cancellationToken
@@ -38,6 +39,20 @@ public class StreamClient(HttpClient http)
 
         return _cipherManifest =
             playerSource.CipherManifest
+            ?? throw new YoutubeExplodeException("Failed to extract the cipher manifest.");
+    }
+
+    private async ValueTask<Func<string, string>> ResolveNSignatureAsync(
+        CancellationToken cancellationToken
+    )
+    {
+        if (_decryptN is not null)
+            return _decryptN;
+
+        var playerSource = await _controller.GetPlayerSourceAsync(cancellationToken);
+
+        return _decryptN =
+            playerSource.DecryptNSignature
             ?? throw new YoutubeExplodeException("Failed to extract the cipher manifest.");
     }
 
@@ -109,6 +124,13 @@ public class StreamClient(HttpClient http)
                     streamData.SignatureParameter ?? "sig",
                     cipherManifest.Decipher(streamData.Signature)
                 );
+            }
+
+            // Handle n-signature streams
+            if (!string.IsNullOrWhiteSpace(streamData.NSignature))
+            {
+                var decryptedN = await ResolveNSignatureAsync(cancellationToken);
+                url = UrlEx.SetQueryParameter(url, "n", decryptedN(streamData.NSignature));
             }
 
             var contentLength = await TryGetContentLengthAsync(streamData, url, cancellationToken);
