@@ -1,60 +1,44 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Jint;
 using Lazy;
 using YoutubeExplode.Bridge.Cipher;
+using YoutubeExplode.Bridge.NCipher;
+using YoutubeExplode.Utils;
 using YoutubeExplode.Utils.Extensions;
 
 namespace YoutubeExplode.Bridge;
 
 internal partial class PlayerSource(string content)
 {
-    private readonly Engine _jsEngine = new();
-
     [Lazy]
-    public Func<string, string>? DecryptNSignature =>
-        n =>
+    public NSignatureManifest? NSignatureManifest
+    {
+        get
         {
-            string pattern =
-                @"(?x)
-                (?:
-                    \.get\(""n""\)\)&&\(b=|
-                    (?:
-                        b=String\.fromCharCode\(110\)|
-                        (?<str_idx>[a-zA-Z0-9_$.]+)&&\(b=""nn""\[\+\1\]
-                    )
-                    (?:
-                        ,[a-zA-Z0-9_$]+\(a\))?,c=a\.
-                        (?:
-                            get\(b\)|
-                            [a-zA-Z0-9_$]+\[b\]\|\|null
-                        )\)&&\(c=|
-                    \b(?<var>[a-zA-Z0-9_$]+)=
-                )(?<nfunc>[a-zA-Z0-9_$]+)(?:\[(?<idx>\d+)\])?\([a-zA-Z]\)
-                (?(var),[a-zA-Z0-9_$]+\.set\(""n""\,\2\),\3\.length)";
+            var functionName = Regex
+                .Match(
+                    content,
+                    """
+                    (?xs)
+                                    ;\s*(?<name>[a-zA-Z0-9_$]+)\s*=\s*function\([a-zA-Z0-9_$]+\)
+                                    \s*\{(?:(?!};).)+?["']enhanced_except_
+                    """
+                )
+                .Groups["name"]
+                .Value.NullIfWhiteSpace();
 
-            var regex = new Regex(pattern, RegexOptions.IgnorePatternWhitespace);
-            var match = regex.Match(content);
-            var name = match.Groups["nfunc"].Value;
-            var idx = match.Groups["idx"].Value;
+            if (string.IsNullOrWhiteSpace(functionName))
+                return null;
 
-            if (match.Success)
-            {
-                //Extract only the function, not the whole document
-                _jsEngine.SetValue("document", new { });
-                _jsEngine.Evaluate(content);
+            var functionCode = Js.ExtractFunction(content, functionName);
 
-                // Extract the named groups 'nfunc' and 'idx'
-                var array = _jsEngine.GetValue(name).AsArray();
-                var func = array[idx].AsFunctionInstance();
-                var result = func.Call(n);
-                Console.Write(result);
-                return result.AsString();
-            }
+            if (functionCode is null)
+                return null;
 
-            return n;
-        };
+            return new NSignatureManifest(functionCode, functionName);
+        }
+    }
 
     [Lazy]
     public CipherManifest? CipherManifest

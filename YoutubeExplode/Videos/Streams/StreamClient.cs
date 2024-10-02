@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using YoutubeExplode.Bridge;
 using YoutubeExplode.Bridge.Cipher;
+using YoutubeExplode.Bridge.NCipher;
 using YoutubeExplode.Common;
 using YoutubeExplode.Exceptions;
 using YoutubeExplode.Utils;
@@ -26,7 +27,8 @@ public class StreamClient(HttpClient http)
     // Because we determine the player version ourselves, it's safe to cache the cipher manifest
     // for the entire lifetime of the client.
     private CipherManifest? _cipherManifest;
-    private Func<string, string>? _decryptN;
+    private NSignatureManifest? _NcipherManifest;
+    private PlayerSource? _playerSource;
 
     private async ValueTask<CipherManifest> ResolveCipherManifestAsync(
         CancellationToken cancellationToken
@@ -35,25 +37,25 @@ public class StreamClient(HttpClient http)
         if (_cipherManifest is not null)
             return _cipherManifest;
 
-        var playerSource = await _controller.GetPlayerSourceAsync(cancellationToken);
+        _playerSource ??= await _controller.GetPlayerSourceAsync(cancellationToken);
 
         return _cipherManifest =
-            playerSource.CipherManifest
+            _playerSource.CipherManifest
             ?? throw new YoutubeExplodeException("Failed to extract the cipher manifest.");
     }
 
-    private async ValueTask<Func<string, string>> ResolveNSignatureAsync(
+    private async ValueTask<NSignatureManifest> ResolveNSignatureAsync(
         CancellationToken cancellationToken
     )
     {
-        if (_decryptN is not null)
-            return _decryptN;
+        if (_NcipherManifest is not null)
+            return _NcipherManifest;
 
-        var playerSource = await _controller.GetPlayerSourceAsync(cancellationToken);
+        _playerSource ??= await _controller.GetPlayerSourceAsync(cancellationToken);
 
-        return _decryptN =
-            playerSource.DecryptNSignature
-            ?? throw new YoutubeExplodeException("Failed to extract the cipher manifest.");
+        return _NcipherManifest =
+            _playerSource.NSignatureManifest
+            ?? throw new YoutubeExplodeException("Failed to extract the n signature.");
     }
 
     private async ValueTask<long?> TryGetContentLengthAsync(
@@ -129,8 +131,12 @@ public class StreamClient(HttpClient http)
             // Handle n-signature streams
             if (!string.IsNullOrWhiteSpace(streamData.NSignature))
             {
-                var decryptedN = await ResolveNSignatureAsync(cancellationToken);
-                url = UrlEx.SetQueryParameter(url, "n", decryptedN(streamData.NSignature));
+                var nSignatureManifest = await ResolveNSignatureAsync(cancellationToken);
+                url = UrlEx.SetQueryParameter(
+                    url,
+                    "n",
+                    nSignatureManifest.Decipher(streamData.NSignature)
+                );
             }
 
             var contentLength = await TryGetContentLengthAsync(streamData, url, cancellationToken);
