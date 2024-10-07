@@ -1,42 +1,58 @@
-﻿using System.Text.RegularExpressions;
+﻿using Acornima;
+using Acornima.Ast;
 
 namespace YoutubeExplode.Utils;
 
 internal static class Js
 {
-    public static string? ExtractFunction(string jscode, string funcname)
+    public static string? ExtractFunction(string jsCode, string functionName)
     {
-        // Regex to find the function declaration up to the first opening brace
-        string pattern = $@"{Regex.Escape(funcname)}\s*=\s*function\s*\(.*?\)\s*\{{";
-        Match match = Regex.Match(jscode, pattern);
+        // Parse the JavaScript code into an AST
+        var parser = new Parser();
+        var program = parser.ParseScript(jsCode);
+        var function = FindFunctionByName(program, functionName);
 
-        if (!match.Success)
+        return function?.ToString();
+    }
+
+    // Recursive method to find a function declaration by name
+    private static AssignmentExpression? FindFunctionByName(Program program, string functionName)
+    {
+        foreach (var statement in program.Body)
         {
-            return null; // No function found
-        }
-
-        int startIdx = match.Index + match.Length - 1; // Start just before the opening brace '{'
-
-        // Now let's find the matching closing brace, considering nested braces
-        int braceCount = 0;
-        for (int i = startIdx; i < jscode.Length; i++)
-        {
-            if (jscode[i] == '{')
+            // Recursively search in child nodes if it's a statement
+            var childFunction = FindFunctionInChildNodes(statement, functionName);
+            if (childFunction != null)
             {
-                braceCount++;
-            }
-            else if (jscode[i] == '}')
-            {
-                braceCount--;
-            }
-
-            if (braceCount == 0)
-            {
-                // When all braces are matched, return the full function code
-                return jscode.Substring(match.Index, i - match.Index + 1);
+                return childFunction;
             }
         }
+        return null; // Function not found
+    }
 
-        return null; // If no matching closing brace is found
+    // Helper method to recursively search for function declarations in child nodes
+    private static AssignmentExpression? FindFunctionInChildNodes(Node node, string functionName)
+    {
+        // For other node types, check if they have child nodes
+        foreach (var childNode in node.ChildNodes)
+        {
+            if (
+                childNode is AssignmentExpression functionDecl
+                && functionDecl.Left is Identifier identifier
+                && identifier.Name == functionName
+            )
+            {
+                return functionDecl;
+            }
+
+            // Recursively search in the child node
+            var result = FindFunctionInChildNodes(childNode, functionName);
+            if (result is not null)
+            {
+                return result;
+            }
+        }
+
+        return null; // Function not found in child nodes
     }
 }
