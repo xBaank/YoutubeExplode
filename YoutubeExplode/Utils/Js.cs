@@ -1,5 +1,5 @@
-﻿using Acornima;
-using Acornima.Ast;
+﻿using Esprima;
+using Esprima.Ast;
 
 namespace YoutubeExplode.Utils;
 
@@ -8,10 +8,9 @@ internal static class Js
     public static string? ExtractFunction(string jsCode, string functionName)
     {
         // Parse the JavaScript code into an AST
-        var parser = new Parser();
+        var parser = new JavaScriptParser();
         var program = parser.ParseScript(jsCode);
         var function = FindFunctionByName(program, functionName);
-
         return function?.ToString();
     }
 
