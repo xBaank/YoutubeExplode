@@ -127,14 +127,11 @@ internal class VideoController(HttpClient http)
               "videoId": {{Json.Serialize(videoId)}},
               "context": {
                 "client": {
-                  "clientName": "TVHTML5_SIMPLY_EMBEDDED_PLAYER",
-                  "clientVersion": "2.0",
+                  "clientName": "TVHTML5",
+                  "clientVersion": "7.20240724.13.00",
                   "hl": "en",
                   "gl": "US",
                   "utcOffsetMinutes": 0
-                },
-                "thirdParty": {
-                  "embedUrl": "https://www.youtube.com"
                 }
               },
               "playbackContext": {
