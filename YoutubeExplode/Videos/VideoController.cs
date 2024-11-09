@@ -112,9 +112,7 @@ internal class VideoController(HttpClient http)
         CancellationToken cancellationToken = default
     )
     {
-        // The only client that can handle age-restricted videos without authentication is the
-        // TVHTML5_SIMPLY_EMBEDDED_PLAYER client.
-        // This client does require signature deciphering, so we only use it as a fallback.
+        // Used as a fallback to IOS
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
             "https://www.youtube.com/youtubei/v1/player"
