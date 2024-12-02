@@ -16,10 +16,12 @@ namespace YoutubeExplode;
 internal class YoutubeHttpHandler : ClientDelegatingHandler
 {
     private readonly CookieContainer _cookieContainer = new();
+    private readonly string? _dataSyncId;
 
     public YoutubeHttpHandler(
         HttpClient http,
         IReadOnlyList<Cookie> initialCookies,
+        string? dataSyncId,
         bool disposeClient = false
     )
         : base(http, disposeClient)
@@ -38,6 +40,7 @@ internal class YoutubeHttpHandler : ClientDelegatingHandler
                 Domain = "youtube.com",
             }
         );
+        _dataSyncId = dataSyncId;
     }
 
     private string? TryGenerateAuthHeaderValue(Uri uri)
@@ -60,10 +63,10 @@ internal class YoutubeHttpHandler : ClientDelegatingHandler
         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var domain = uri.GetDomain();
 
-        var token = $"{timestamp} {sessionId} {domain}";
+        var token = $"{_dataSyncId} {timestamp} {sessionId} {domain}";
         var tokenHash = Hash.Compute(SHA1.Create(), Encoding.UTF8.GetBytes(token)).ToHex();
 
-        return $"SAPISIDHASH {timestamp}_{tokenHash}";
+        return $"SAPISIDHASH {timestamp}_{tokenHash}_u SAPISID1PHASH {timestamp}_{tokenHash}_u SAPISID3PHASH {timestamp}_{tokenHash}_u";
     }
 
     private HttpRequestMessage HandleRequest(HttpRequestMessage request)

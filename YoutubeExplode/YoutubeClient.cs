@@ -19,7 +19,10 @@ public class YoutubeClient
     /// </summary>
     public YoutubeClient(HttpClient http, IReadOnlyList<Cookie> initialCookies)
     {
-        var youtubeHttp = new HttpClient(new YoutubeHttpHandler(http, initialCookies), true);
+        var youtubeHttp = new HttpClient(
+            new YoutubeHttpHandler(http, initialCookies, Http.GetDataSyncId(initialCookies)),
+            true
+        );
 
         Videos = new VideoClient(youtubeHttp);
         Playlists = new PlaylistClient(youtubeHttp);

@@ -69,15 +69,15 @@ internal class VideoController(HttpClient http)
               "contentCheckOk": true,
               "context": {
                 "client": {
-                  "clientName": "IOS",
-                  "clientVersion": "19.29.1",
-                  "deviceMake": "Apple",
-                  "deviceModel": "iPhone16,2",
+                  "clientName": "ANDROID_VR",
+                  "clientVersion": "1.60.19",
+                  "deviceMake": "Oculus",
+                  "deviceModel": "Quest 3",
+                  "androidSdkVersion": 32,
+                  "userAgent": "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip",
+                  "osName": "Android",
+                  "osVersion": "12L",
                   "hl": "en",
-                  "osName": "iPhone",
-                  "osVersion": "17.5.1.21F90",
-                  "timeZone": "UTC",
-                  "userAgent": "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)",
                   "gl": "US",
                   "utcOffsetMinutes": 0
                 }
@@ -90,7 +90,7 @@ internal class VideoController(HttpClient http)
         // https://github.com/iv-org/invidious/issues/3230#issuecomment-1226887639
         request.Headers.Add(
             "User-Agent",
-            "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X)"
+            "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip"
         );
 
         using var response = await Http.SendAsync(request, cancellationToken);
