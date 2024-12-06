@@ -69,15 +69,15 @@ internal class VideoController(HttpClient http)
               "contentCheckOk": true,
               "context": {
                 "client": {
-                  "clientName": "ANDROID_VR",
-                  "clientVersion": "1.60.19",
-                  "deviceMake": "Oculus",
-                  "deviceModel": "Quest 3",
-                  "androidSdkVersion": 32,
-                  "userAgent": "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip",
-                  "osName": "Android",
-                  "osVersion": "12L",
+                  "clientName": "IOS",
+                  "clientVersion": "19.29.1",
+                  "deviceMake": "Apple",
+                  "deviceModel": "iPhone16,2",
                   "hl": "en",
+                  "osName": "iPhone",
+                  "osVersion": "17.5.1.21F90",
+                  "timeZone": "UTC",
+                  "userAgent": "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)",
                   "gl": "US",
                   "utcOffsetMinutes": 0
                 }
@@ -90,7 +90,7 @@ internal class VideoController(HttpClient http)
         // https://github.com/iv-org/invidious/issues/3230#issuecomment-1226887639
         request.Headers.Add(
             "User-Agent",
-            "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip"
+            "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X)"
         );
 
         using var response = await Http.SendAsync(request, cancellationToken);
@@ -112,9 +112,7 @@ internal class VideoController(HttpClient http)
         CancellationToken cancellationToken = default
     )
     {
-        // The only client that can handle age-restricted videos without authentication is the
-        // TVHTML5_SIMPLY_EMBEDDED_PLAYER client.
-        // This client does require signature deciphering, so we only use it as a fallback.
+        // Used as a fallback to IOS
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
             "https://www.youtube.com/youtubei/v1/player"
@@ -127,14 +125,11 @@ internal class VideoController(HttpClient http)
               "videoId": {{Json.Serialize(videoId)}},
               "context": {
                 "client": {
-                  "clientName": "TVHTML5_SIMPLY_EMBEDDED_PLAYER",
-                  "clientVersion": "2.0",
+                  "clientName": "TVHTML5",
+                  "clientVersion": "7.20240724.13.00",
                   "hl": "en",
                   "gl": "US",
                   "utcOffsetMinutes": 0
-                },
-                "thirdParty": {
-                  "embedUrl": "https://www.youtube.com"
                 }
               },
               "playbackContext": {

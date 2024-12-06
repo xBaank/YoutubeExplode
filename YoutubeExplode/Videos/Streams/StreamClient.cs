@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using YoutubeExplode.Bridge;
-using YoutubeExplode.Bridge.Cipher;
 using YoutubeExplode.Common;
 using YoutubeExplode.Exceptions;
 using YoutubeExplode.Utils;
@@ -20,27 +19,16 @@ namespace YoutubeExplode.Videos.Streams;
 /// <summary>
 /// Operations related to media streams of YouTube videos.
 /// </summary>
-public class StreamClient(HttpClient http)
+public class StreamClient
 {
-    private readonly StreamController _controller = new(http);
-
-    // Because we determine the player version ourselves, it's safe to cache the cipher manifest
-    // for the entire lifetime of the client.
-    private CipherManifest? _cipherManifest;
-
-    private async ValueTask<CipherManifest> ResolveCipherManifestAsync(
-        CancellationToken cancellationToken
-    )
+    internal StreamClient(HttpClient http, StreamController controller)
     {
-        if (_cipherManifest is not null)
-            return _cipherManifest;
-
-        var playerSource = await _controller.GetPlayerSourceAsync(cancellationToken);
-
-        return _cipherManifest =
-            playerSource.CipherManifest
-            ?? throw new YoutubeExplodeException("Failed to extract the cipher manifest.");
+        this.http = http;
+        _controller = controller;
     }
+
+    private readonly HttpClient http;
+    private readonly StreamController _controller;
 
     private async ValueTask<long?> TryGetContentLengthAsync(
         IStreamData streamData,
@@ -103,12 +91,27 @@ public class StreamClient(HttpClient http)
             // Handle cipher-protected streams
             if (!string.IsNullOrWhiteSpace(streamData.Signature))
             {
-                var cipherManifest = await ResolveCipherManifestAsync(cancellationToken);
+                var cipherManifest = await _controller.ResolveCipherManifestAsync(
+                    cancellationToken
+                );
 
                 url = UrlEx.SetQueryParameter(
                     url,
                     streamData.SignatureParameter ?? "sig",
                     cipherManifest.Decipher(streamData.Signature)
+                );
+            }
+
+            // Handle n-signature streams
+            if (!string.IsNullOrWhiteSpace(streamData.NSignature))
+            {
+                var nSignatureManifest = await _controller.ResolveNSignatureAsync(
+                    cancellationToken
+                );
+                url = UrlEx.SetQueryParameter(
+                    url,
+                    "n",
+                    nSignatureManifest.Decipher(streamData.NSignature)
                 );
             }
 
@@ -264,29 +267,14 @@ public class StreamClient(HttpClient http)
         CancellationToken cancellationToken = default
     )
     {
-        try
-        {
-            // Try to get player response from a cipher-less client
-            var playerResponse = await _controller.GetPlayerResponseAsync(
-                videoId,
-                cancellationToken
-            );
+        var cipherManifest = await _controller.ResolveCipherManifestAsync(cancellationToken);
+        var playerResponse = await _controller.GetPlayerResponseAsync(
+            videoId,
+            cipherManifest.SignatureTimestamp,
+            cancellationToken
+        );
 
-            return await GetStreamInfosAsync(videoId, playerResponse, cancellationToken);
-        }
-        catch (VideoUnplayableException)
-        {
-            // Try to get player response from a client with cipher
-            var cipherManifest = await ResolveCipherManifestAsync(cancellationToken);
-
-            var playerResponse = await _controller.GetPlayerResponseAsync(
-                videoId,
-                cipherManifest.SignatureTimestamp,
-                cancellationToken
-            );
-
-            return await GetStreamInfosAsync(videoId, playerResponse, cancellationToken);
-        }
+        return await GetStreamInfosAsync(videoId, playerResponse, cancellationToken);
     }
 
     /// <summary>
@@ -317,7 +305,12 @@ public class StreamClient(HttpClient http)
         CancellationToken cancellationToken = default
     )
     {
-        var playerResponse = await _controller.GetPlayerResponseAsync(videoId, cancellationToken);
+        var cipherManifest = await _controller.ResolveCipherManifestAsync(cancellationToken);
+        var playerResponse = await _controller.GetPlayerResponseAsync(
+            videoId,
+            cipherManifest.SignatureTimestamp,
+            cancellationToken
+        );
         if (!playerResponse.IsPlayable)
         {
             throw new VideoUnplayableException(

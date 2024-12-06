@@ -12,19 +12,30 @@ namespace YoutubeExplode.Videos;
 /// <summary>
 /// Operations related to YouTube videos.
 /// </summary>
-public class VideoClient(HttpClient http)
+public class VideoClient
 {
-    private readonly VideoController _controller = new(http);
+    private readonly StreamController _controller;
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="http"></param>
+    public VideoClient(HttpClient http)
+    {
+        _controller = new(http);
+        Streams = new(http, _controller);
+        ClosedCaptions = new(http, _controller);
+    }
 
     /// <summary>
     /// Operations related to media streams of YouTube videos.
     /// </summary>
-    public StreamClient Streams { get; } = new(http);
+    public StreamClient Streams { get; }
 
     /// <summary>
     /// Operations related to closed captions of YouTube videos.
     /// </summary>
-    public ClosedCaptionClient ClosedCaptions { get; } = new(http);
+    public ClosedCaptionClient ClosedCaptions { get; }
 
     /// <summary>
     /// Gets the metadata associated with the specified video.
@@ -35,10 +46,15 @@ public class VideoClient(HttpClient http)
     )
     {
         var watchPage = await _controller.GetVideoWatchPageAsync(videoId, cancellationToken);
+        var cipherManifest = await _controller.ResolveCipherManifestAsync(cancellationToken);
 
         var playerResponse =
             watchPage.PlayerResponse
-            ?? await _controller.GetPlayerResponseAsync(videoId, cancellationToken);
+            ?? await _controller.GetPlayerResponseAsync(
+                videoId,
+                cipherManifest.SignatureTimestamp,
+                cancellationToken
+            );
 
         var title =
             playerResponse.Title

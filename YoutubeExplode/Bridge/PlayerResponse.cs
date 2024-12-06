@@ -217,6 +217,9 @@ internal partial class PlayerResponse
         public string? Signature => CipherData?.GetValueOrDefault("s");
 
         [Lazy]
+        public string? NSignature => Url?.Pipe(UrlEx.GetQueryParameters).GetValueOrDefault("n");
+
+        [Lazy]
         public string? SignatureParameter => CipherData?.GetValueOrDefault("sp");
 
         [Lazy]

@@ -7,6 +7,7 @@ internal interface IStreamData
     string? Url { get; }
 
     string? Signature { get; }
+    string? NSignature { get; }
 
     string? SignatureParameter { get; }
 

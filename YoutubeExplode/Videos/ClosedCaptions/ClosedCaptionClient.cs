@@ -10,22 +10,35 @@ using System.Threading;
 using System.Threading.Tasks;
 using YoutubeExplode.Exceptions;
 using YoutubeExplode.Utils.Extensions;
+using YoutubeExplode.Videos.Streams;
 
 namespace YoutubeExplode.Videos.ClosedCaptions;
 
 /// <summary>
 /// Operations related to closed captions of YouTube videos.
 /// </summary>
-public class ClosedCaptionClient(HttpClient http)
+public class ClosedCaptionClient
 {
-    private readonly ClosedCaptionController _controller = new(http);
+    private readonly ClosedCaptionController _controller;
+    private readonly StreamController _streamController;
+
+    internal ClosedCaptionClient(HttpClient http, StreamController streamController)
+    {
+        _controller = new(http);
+        _streamController = streamController;
+    }
 
     private async IAsyncEnumerable<ClosedCaptionTrackInfo> GetClosedCaptionTrackInfosAsync(
         VideoId videoId,
         [EnumeratorCancellation] CancellationToken cancellationToken = default
     )
     {
-        var playerResponse = await _controller.GetPlayerResponseAsync(videoId, cancellationToken);
+        var cipherManifest = await _streamController.ResolveCipherManifestAsync(cancellationToken);
+        var playerResponse = await _controller.GetPlayerResponseAsync(
+            videoId,
+            cipherManifest.SignatureTimestamp,
+            cancellationToken
+        );
 
         foreach (var trackData in playerResponse.ClosedCaptionTracks)
         {

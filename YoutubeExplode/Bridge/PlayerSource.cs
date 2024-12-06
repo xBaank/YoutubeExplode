@@ -3,12 +3,43 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Lazy;
 using YoutubeExplode.Bridge.Cipher;
+using YoutubeExplode.Bridge.NCipher;
+using YoutubeExplode.Utils;
 using YoutubeExplode.Utils.Extensions;
 
 namespace YoutubeExplode.Bridge;
 
 internal partial class PlayerSource(string content)
 {
+    [Lazy]
+    public NSignatureManifest? NSignatureManifest
+    {
+        get
+        {
+            var functionName = Regex
+                .Match(
+                    content,
+                    """
+                    (?xs)
+                                    ;\s*(?<name>[a-zA-Z0-9_$]+)\s*=\s*function\([a-zA-Z0-9_$]+\)
+                                    \s*\{(?:(?!};).)+?["']enhanced_except_
+                    """
+                )
+                .Groups["name"]
+                .Value.NullIfWhiteSpace();
+
+            if (string.IsNullOrWhiteSpace(functionName))
+                return null;
+
+            var functionCode = Js.ExtractFunction(content, functionName);
+
+            if (functionCode is null)
+                return null;
+
+            return new NSignatureManifest(functionCode, functionName);
+        }
+    }
+
     [Lazy]
     public CipherManifest? CipherManifest
     {
