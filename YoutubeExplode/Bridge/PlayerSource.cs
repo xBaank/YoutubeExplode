@@ -22,7 +22,10 @@ internal partial class PlayerSource(string content)
                     """
                     (?xs)
                                     ;\s*(?<name>[a-zA-Z0-9_$]+)\s*=\s*function\([a-zA-Z0-9_$]+\)
-                                    \s*\{(?:(?!};).)+?["']enhanced_except_
+                                    \s*\{(?:(?!};).)+?(
+                                        ["']enhanced_except_ | 
+                                        return\s*(?<q>[""'])[\w-]+_w8_(\k<q>)\s*\+\s*[a-zA-Z0-9_$]+
+                                    )
                     """
                 )
                 .Groups["name"]
@@ -35,6 +38,13 @@ internal partial class PlayerSource(string content)
 
             if (functionCode is null)
                 return null;
+
+            //Fix undefined
+            functionCode = Regex.Replace(
+                functionCode,
+                """;\s*if\s*\(\s*typeof\s+[a-zA-Z0-9_$]+\s*===?\s*(["\'])undefined\1\s*\)\s*return\s+\w+\s*;""",
+                string.Empty
+            );
 
             return new NSignatureManifest(functionCode, functionName);
         }

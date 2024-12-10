@@ -125,11 +125,9 @@ internal class VideoController(HttpClient http)
               "videoId": {{Json.Serialize(videoId)}},
               "context": {
                 "client": {
-                  "clientName": "TVHTML5",
-                  "clientVersion": "7.20240724.13.00",
-                  "hl": "en",
-                  "gl": "US",
-                  "utcOffsetMinutes": 0
+                    "clientName": "MWEB",
+                    "clientVersion": "2.20241202.07.00",
+                    "userAgent": "Mozilla/5.0 (iPad; CPU OS 16_7_10 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1,gzip(gfe)"
                 }
               },
               "playbackContext": {

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using YoutubeExplode.Channels;
 using YoutubeExplode.Playlists;
 using YoutubeExplode.Search;
@@ -17,10 +19,16 @@ public class YoutubeClient
     /// <summary>
     /// Initializes an instance of <see cref="YoutubeClient" />.
     /// </summary>
+    ///
+    [Obsolete("Use Authenticated static method")]
     public YoutubeClient(HttpClient http, IReadOnlyList<Cookie> initialCookies)
     {
         var youtubeHttp = new HttpClient(
-            new YoutubeHttpHandler(http, initialCookies, Http.GetDataSyncId(initialCookies)),
+            new YoutubeHttpHandler(
+                http,
+                initialCookies,
+                Http.GetDataSyncId(initialCookies).GetAwaiter().GetResult()
+            ),
             true
         );
 
@@ -34,11 +42,17 @@ public class YoutubeClient
     /// Initializes an instance of <see cref="YoutubeClient" />.
     /// </summary>
     public YoutubeClient(HttpClient http)
-        : this(http, []) { }
+    {
+        Videos = new VideoClient(http);
+        Playlists = new PlaylistClient(http);
+        Channels = new ChannelClient(http);
+        Search = new SearchClient(http);
+    }
 
     /// <summary>
     /// Initializes an instance of <see cref="YoutubeClient" />.
     /// </summary>
+    [Obsolete("Use Authenticated static method")]
     public YoutubeClient(IReadOnlyList<Cookie> initialCookies)
         : this(Http.Client, initialCookies) { }
 
@@ -47,6 +61,26 @@ public class YoutubeClient
     /// </summary>
     public YoutubeClient()
         : this(Http.Client) { }
+
+    /// <summary>
+    /// Initializes an instance of <see cref="YoutubeClient" />.
+    /// </summary>
+    public static async Task<YoutubeClient> WithAuthAsync(
+        IReadOnlyList<Cookie> initialCookies,
+        HttpClient? http = null
+    )
+    {
+        var youtubeHttp = new HttpClient(
+            new YoutubeHttpHandler(
+                http ?? Http.Client,
+                initialCookies,
+                await Http.GetDataSyncId(initialCookies)
+            ),
+            true
+        );
+
+        return new YoutubeClient(youtubeHttp);
+    }
 
     /// <summary>
     /// Operations related to YouTube videos.

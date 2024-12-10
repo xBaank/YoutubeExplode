@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace YoutubeExplode.Utils;
 
@@ -12,8 +13,9 @@ internal static class Http
 
     public static HttpClient Client => HttpClientLazy.Value;
 
-    public static string? GetDataSyncId(IReadOnlyList<Cookie> cookies)
+    public static async Task<string?> GetDataSyncId(IReadOnlyList<Cookie> cookies)
     {
+        //TODO We can fallback to the youtube main watch page to extract the datasyncid too.
         if (cookies.Count == 0)
             return null;
 
@@ -32,14 +34,8 @@ internal static class Http
             if (!string.IsNullOrWhiteSpace(cookieHeaderValue))
                 request.Headers.Add("Cookie", cookieHeaderValue);
         }
-
-        var result = Http
-            .Client.SendAsync(request)
-            .GetAwaiter()
-            .GetResult()
-            .Content.ReadAsStringAsync()
-            .GetAwaiter()
-            .GetResult();
+        var response = await Http.Client.SendAsync(request);
+        var result = await response.Content.ReadAsStringAsync();
         var datasyncIds = string.Join("\n", result.Split("\n").Skip(1));
         var dataSyncIdJson = Json.TryParse(datasyncIds);
         var dataSyncId = dataSyncIdJson

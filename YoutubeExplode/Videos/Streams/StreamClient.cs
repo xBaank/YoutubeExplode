@@ -116,6 +116,7 @@ public class StreamClient
             }
 
             var contentLength = await TryGetContentLengthAsync(streamData, url, cancellationToken);
+
             if (contentLength is null)
                 continue;
 
