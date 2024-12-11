@@ -123,13 +123,14 @@ internal class VideoController(HttpClient http)
             $$"""
             {
               "videoId": {{Json.Serialize(videoId)}},
+              "contentCheckOk": true,
               "context": {
                 "client": {
                     "clientName": "MWEB",
                     "clientVersion": "2.20241202.07.00",
                     "userAgent": "Mozilla/5.0 (iPad; CPU OS 16_7_10 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1,gzip(gfe)"
                 }
-              },
+              },    
               "playbackContext": {
                 "contentPlaybackContext": {
                   "signatureTimestamp": {{Json.Serialize(signatureTimestamp)}}
@@ -137,6 +138,11 @@ internal class VideoController(HttpClient http)
               }
             }
             """
+        );
+
+        request.Headers.Add(
+            "User-Agent",
+            "Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1"
         );
 
         using var response = await Http.SendAsync(request, cancellationToken);

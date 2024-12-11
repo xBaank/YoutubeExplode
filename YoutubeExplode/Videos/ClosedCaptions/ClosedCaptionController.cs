@@ -18,6 +18,9 @@ internal class ClosedCaptionController(HttpClient http) : VideoController(http)
         var urlWithFormat = url.Pipe(s => UrlEx.SetQueryParameter(s, "format", "3"))
             .Pipe(s => UrlEx.SetQueryParameter(s, "fmt", "3"));
 
+        if (!urlWithFormat.StartsWith("https://www.youtube.com"))
+            urlWithFormat = "https://www.youtube.com" + urlWithFormat;
+
         return ClosedCaptionTrackResponse.Parse(
             await Http.GetStringAsync(urlWithFormat, cancellationToken)
         );
