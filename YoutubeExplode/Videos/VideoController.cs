@@ -7,7 +7,7 @@ using YoutubeExplode.Utils;
 
 namespace YoutubeExplode.Videos;
 
-internal class VideoController(HttpClient http)
+internal class VideoController(HttpClient http, bool isAuthenticated)
 {
     protected HttpClient Http { get; } = http;
 
@@ -43,6 +43,15 @@ internal class VideoController(HttpClient http)
     }
 
     public async ValueTask<PlayerResponse> GetPlayerResponseAsync(
+        VideoId videoId,
+        string? signatureTimestamp,
+        CancellationToken cancellationToken = default
+    ) =>
+        isAuthenticated
+            ? await GetPlayerResponseAuthAsync(videoId, signatureTimestamp, cancellationToken)
+            : await GetPlayerResponseAsync(videoId, cancellationToken);
+
+    private async ValueTask<PlayerResponse> GetPlayerResponseAsync(
         VideoId videoId,
         CancellationToken cancellationToken = default
     )
@@ -106,7 +115,7 @@ internal class VideoController(HttpClient http)
         return playerResponse;
     }
 
-    public async ValueTask<PlayerResponse> GetPlayerResponseAsync(
+    private async ValueTask<PlayerResponse> GetPlayerResponseAuthAsync(
         VideoId videoId,
         string? signatureTimestamp,
         CancellationToken cancellationToken = default

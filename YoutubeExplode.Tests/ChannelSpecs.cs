@@ -4,6 +4,7 @@ using FluentAssertions;
 using Xunit;
 using YoutubeExplode.Common;
 using YoutubeExplode.Tests.TestData;
+using YoutubeExplode.Tests.Utils;
 
 namespace YoutubeExplode.Tests;
 
@@ -13,7 +14,7 @@ public class ChannelSpecs
     public async Task I_can_get_the_metadata_of_a_channel()
     {
         // Arrange
-        var youtube = new YoutubeClient();
+        var youtube = await YoutubeClientFactory.GetYoutubeClientAsync();
 
         // Act
         var channel = await youtube.Channels.GetAsync(ChannelIds.Normal);
@@ -29,7 +30,7 @@ public class ChannelSpecs
     public async Task I_can_get_the_metadata_of_a_channel_by_user_name()
     {
         // Arrange
-        var youtube = new YoutubeClient();
+        var youtube = await YoutubeClientFactory.GetYoutubeClientAsync();
 
         // Act
         var channel = await youtube.Channels.GetByUserAsync(UserNames.Normal);
@@ -45,7 +46,7 @@ public class ChannelSpecs
     public async Task I_can_get_the_metadata_of_a_channel_by_slug()
     {
         // Arrange
-        var youtube = new YoutubeClient();
+        var youtube = await YoutubeClientFactory.GetYoutubeClientAsync();
 
         // Act
         var channel = await youtube.Channels.GetBySlugAsync(ChannelSlugs.Normal);
@@ -61,7 +62,7 @@ public class ChannelSpecs
     public async Task I_can_get_the_metadata_of_a_channel_by_handle()
     {
         // Arrange
-        var youtube = new YoutubeClient();
+        var youtube = await YoutubeClientFactory.GetYoutubeClientAsync();
 
         // Act
         var channel = await youtube.Channels.GetByHandleAsync(ChannelHandles.Normal);
@@ -79,7 +80,7 @@ public class ChannelSpecs
     public async Task I_can_get_the_metadata_of_any_available_channel(string channelId)
     {
         // Arrange
-        var youtube = new YoutubeClient();
+        var youtube = await YoutubeClientFactory.GetYoutubeClientAsync();
 
         // Act
         var channel = await youtube.Channels.GetAsync(channelId);
@@ -95,7 +96,7 @@ public class ChannelSpecs
     public async Task I_can_get_videos_uploaded_by_a_channel()
     {
         // Arrange
-        var youtube = new YoutubeClient();
+        var youtube = await YoutubeClientFactory.GetYoutubeClientAsync();
 
         // Act
         var videos = await youtube.Channels.GetUploadsAsync(ChannelIds.Normal);

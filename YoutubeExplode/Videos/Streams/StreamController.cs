@@ -9,7 +9,8 @@ using YoutubeExplode.Exceptions;
 
 namespace YoutubeExplode.Videos.Streams;
 
-internal class StreamController(HttpClient http) : VideoController(http)
+internal class StreamController(HttpClient http, bool isAuthenticated)
+    : VideoController(http, isAuthenticated)
 {
     // Because we determine the player version ourselves, it's safe to cache the cipher manifest
     // for the entire lifetime of the client.
@@ -17,7 +18,7 @@ internal class StreamController(HttpClient http) : VideoController(http)
     private NSignatureManifest? _NcipherManifest;
     private PlayerSource? _playerSource;
 
-    public async ValueTask<PlayerSource> GetPlayerSourceAsync(
+    private async ValueTask<PlayerSource> GetPlayerSourceAsync(
         CancellationToken cancellationToken = default
     )
     {

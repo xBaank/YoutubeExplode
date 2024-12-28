@@ -22,28 +22,30 @@ public class YoutubeClient
     ///
     [Obsolete("Use Authenticated static method")]
     public YoutubeClient(HttpClient http, IReadOnlyList<Cookie> initialCookies)
-    {
-        var youtubeHttp = new HttpClient(
-            new YoutubeHttpHandler(
-                http,
-                initialCookies,
-                Http.GetDataSyncId(initialCookies).GetAwaiter().GetResult()
+        : this(
+            new HttpClient(
+                new YoutubeHttpHandler(
+                    http,
+                    initialCookies,
+                    Http.GetDataSyncId(initialCookies).GetAwaiter().GetResult()
+                ),
+                true
             ),
             true
-        );
-
-        Videos = new VideoClient(youtubeHttp);
-        Playlists = new PlaylistClient(youtubeHttp);
-        Channels = new ChannelClient(youtubeHttp);
-        Search = new SearchClient(youtubeHttp);
-    }
+        ) { }
 
     /// <summary>
     /// Initializes an instance of <see cref="YoutubeClient" />.
     /// </summary>
     public YoutubeClient(HttpClient http)
+        : this(http, false) { }
+
+    /// <summary>
+    /// Initializes an instance of <see cref="YoutubeClient" />.
+    /// </summary>
+    private YoutubeClient(HttpClient http, bool isAuthenticated)
     {
-        Videos = new VideoClient(http);
+        Videos = new VideoClient(http, isAuthenticated);
         Playlists = new PlaylistClient(http);
         Channels = new ChannelClient(http);
         Search = new SearchClient(http);
@@ -79,7 +81,7 @@ public class YoutubeClient
             true
         );
 
-        return new YoutubeClient(youtubeHttp);
+        return new YoutubeClient(youtubeHttp, true);
     }
 
     /// <summary>

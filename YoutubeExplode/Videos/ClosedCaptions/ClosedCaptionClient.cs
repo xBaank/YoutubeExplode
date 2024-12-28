@@ -22,9 +22,13 @@ public class ClosedCaptionClient
     private readonly ClosedCaptionController _controller;
     private readonly StreamController _streamController;
 
-    internal ClosedCaptionClient(HttpClient http, StreamController streamController)
+    internal ClosedCaptionClient(
+        HttpClient http,
+        StreamController streamController,
+        bool isAuthenticated
+    )
     {
-        _controller = new(http);
+        _controller = new(http, isAuthenticated);
         _streamController = streamController;
     }
 

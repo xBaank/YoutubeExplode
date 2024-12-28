@@ -16,15 +16,12 @@ public class VideoClient
 {
     private readonly StreamController _controller;
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="http"></param>
-    public VideoClient(HttpClient http)
+    /// <inheritdoc/>
+    public VideoClient(HttpClient http, bool isAuthenticated)
     {
-        _controller = new(http);
+        _controller = new(http, isAuthenticated);
         Streams = new(http, _controller);
-        ClosedCaptions = new(http, _controller);
+        ClosedCaptions = new(http, _controller, isAuthenticated);
     }
 
     /// <summary>
